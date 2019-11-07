@@ -42,9 +42,8 @@ client.on('message', message => {
 });
 
 // Login
-client.login(PRIVATE_KEY).then(async () => {
+client.login(priv.key).then(async () => {
 	initialiseUtility(client);
 	// Inform user the bot is running
 	log("Bot startup complete");
-	sendMessage("Good Morning! I am awake");
 });

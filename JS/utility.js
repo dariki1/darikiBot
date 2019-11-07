@@ -2,8 +2,6 @@ const fs = require('fs');
 const private = require('./../JSON/private.json');
 
 let client;
-const GUILD = private.guild;
-const CHANNEL = private.channel;
 const logLevels = [
 	"",
 	"Warn",
@@ -37,6 +35,6 @@ exports.sendMessage = sendMessage;
  * @param {String} [guild=GUILD] The guild to send the message to
  * @param {String} [channel=CHANNEL] The channel to send the message to
  */
-function sendMessage(message, guild = GUILD, channel = CHANNEL) {
-	client.guilds.get(guild).channels.get(channel).send(message);
+function sendMessage(message, channel) {
+	channel.send(message);
 }

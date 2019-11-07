@@ -14,7 +14,7 @@ exports.command = (para, message) => {
 		message.reply("please tell me who you are slapping");
 	} else {
 		let stringTarget = para.toString().replace(/,/g,' ');
-		if (stringTarget.toLowerCase().includes("darikibot" || "<@518703172303192064>")) {
+		if (stringTarget.toLowerCase().includes("darikibot")  || stringTarget.toLowerCase().includes("<@518703172303192064>")) {
 			utility.sendMessage("<@" + message.author.id + "> slapped " + stringTarget + " and did 0 damage", message.channel);
 		} else {
 			utility.sendMessage("<@" + message.author.id + "> slapped " + stringTarget + " and did " + Math.floor(Math.random()*49+1) + " damage", message.channel);

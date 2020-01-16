@@ -1,5 +1,5 @@
-const inputHandler = require('./../inputHandler.js');
-const config = require('./../../JSON/config.json');
+import * as inputHandler from './../inputHandler.js';
+import * as config from './../../JSON/config.json'; 
 import * as Discord from 'discord.js';
 
 //commandInformation
@@ -11,7 +11,7 @@ export let info = {
 	"help": "When used by itself, it lists all commands, when given a <commandName>, it lists the help for <commandName>"
 }
 
-export function help(para: string[], message: Discord.Message) {
+export let command = (para: string[], message: Discord.Message) => {
 	//If no command is specified, list all registered commands
 	if (para.length === 0) {
 		let ret = "here's a list of commands";

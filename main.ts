@@ -15,6 +15,10 @@ const client: Discord.Client = new Discord.Client();
  * Shows the help information for the given command
  */
 fs.readdirSync("./JS/commands").forEach((fileName: string) => {
+	if (!fileName.match('.js')) {
+		log("Attempted to add command from a non .js file! Aborting command", 1);
+		return;
+	}
 	const command = require("./JS/commands/" + fileName);
 	if (!command.info) {
 		log("Attempt to add command with no info! Aborting command", 1);

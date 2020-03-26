@@ -4,7 +4,6 @@ console.log('Starting Bot');
 import * as Discord from "discord.js";
 import * as fs from 'fs';
 import * as priv from './JSON/private.json';
-import * as config from './JSON/config.json';
 import * as inputHandler from './JS/inputHandler';
 import { log, writeJSON, sendMessage, initialiseUtility } from './JS/utility';
 

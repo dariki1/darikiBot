@@ -8,7 +8,7 @@ export let info = {
 	"parameters": "<commandName>",
 	"needsAdmin": false,
 	"caseSensitive": false,
-	"help": "When used by itself, it lists all commands, when given a <commandName>, it lists the help for <commandName>"
+	"help": "When used by itself, it lists all commands. When given a <commandName>, it lists the help for <commandName>"
 }
 
 export let command = (para: string[], message: Discord.Message) => {

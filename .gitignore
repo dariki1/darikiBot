@@ -89,3 +89,4 @@ typings/
 
 JSON/private.json
 *.js
+build

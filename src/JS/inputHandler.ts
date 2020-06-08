@@ -57,7 +57,7 @@ export async function runCommand(message: Discord.Message) {
 	if (commandToRun) {
 		// Check user roles to make sure they have permission to run the command
 		if (commandToRun.commandJSON.needsAdmin && !message.member.roles.find(role => role.name === adminRole)) {
-			message.reply("Sorry, you must have the '" + adminRole + "' role to use that command");
+			message.reply("sorry, you must have the '" + adminRole + "' role to use that command");
 			return;
 		}
 		commandToRun.effect(command.slice(1), message);

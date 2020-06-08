@@ -1,7 +1,7 @@
 console.log('Starting Bot');
 
 // Load dependencies
-import * as Discord from "discord.js";
+import * as Discord from 'discord.js';
 import * as fs from 'fs';
 import * as priv from './JSON/private.json';
 import * as inputHandler from './JS/inputHandler';

@@ -1,4 +1,4 @@
-import { sendMessage } from "./../utility.js";
+import { sendMessage } from "./../utility";
 import * as Discord from "discord.js";
 
 export let info = {

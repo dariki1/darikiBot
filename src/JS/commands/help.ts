@@ -1,5 +1,5 @@
-import * as inputHandler from './../inputHandler.js';
-import * as config from './../../JSON/config.json'; 
+import * as inputHandler from './../inputHandler';
+import * as config from '../../JSON/config.json'; 
 import * as Discord from 'discord.js';
 
 //commandInformation

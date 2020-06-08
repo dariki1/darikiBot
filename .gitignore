@@ -87,6 +87,7 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 
-JSON/private.json
+private.json
 *.js
 build
+*.lnk

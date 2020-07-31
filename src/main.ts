@@ -5,7 +5,7 @@ import * as Discord from 'discord.js';
 import * as fs from 'fs';
 import * as priv from './JSON/private.json';
 import * as inputHandler from './JS/inputHandler';
-import { log, writeJSON, sendMessage, initialiseUtility } from './JS/utility';
+import { log } from './JS/utility';
 
 // Discord module
 const client: Discord.Client = new Discord.Client();
@@ -46,7 +46,6 @@ client.on('message', (message: Discord.Message) => {
 
 // Login
 client.login(priv.key).then(async () => {
-	initialiseUtility(client);
 	// Inform user the bot is running
 	log("Bot startup complete");
 });

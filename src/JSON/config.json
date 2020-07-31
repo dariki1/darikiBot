@@ -1,4 +1,5 @@
 {
 	"commandPrefix":"/",
-	"adminRole":"admin"	
+	"adminRole":"admin"	,
+	"dbName": "darikiBotDB"
 }

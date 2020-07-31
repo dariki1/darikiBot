@@ -1,16 +1,11 @@
 import * as fs from 'fs';
 import * as Discord from 'discord.js';
 
-let client: Discord.Client;
 const logLevels = [
 	"",
 	"Warn",
 	"ERROR"
 ];
-
-export function initialiseUtility(discordClient: Discord.Client) {
-	client = discordClient;
-}
 
 /**
  * Outputs a message with the time in front of it

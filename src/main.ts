@@ -7,6 +7,21 @@ import * as priv from './JSON/private.json';
 import * as inputHandler from './JS/inputHandler';
 import { log } from './JS/utility';
 
+process.title = "darikiBot";
+
+let key: string;
+
+switch (process.argv.slice(2)[0]) {
+	case 'dep':
+		console.log('Starting in deployment mode');
+		key = priv.depKey;
+		break;
+	default:
+		console.log('Starting in development mode');
+		key = priv.devKey;
+		break;
+}
+
 // Discord module
 const client: Discord.Client = new Discord.Client();
 
@@ -45,7 +60,7 @@ client.on('message', (message: Discord.Message) => {
 });
 
 // Login
-client.login(priv.key).then(async () => {
+client.login(key).then(async () => {
 	// Inform user the bot is running
 	log("Bot startup complete");
 });

@@ -1,4 +1,4 @@
-import * as db from '../dbHandler';
+//import * as db from '../dbHandler';
 import * as Discord from 'discord.js';
 
 //commandInformation
@@ -11,6 +11,6 @@ export let info = {
 }
 
 export let command = (para: string[], message: Discord.Message) => {	
-	db.closeConnection();
+	//db.closeConnection();
 	message.client.destroy();
 }

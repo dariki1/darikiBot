@@ -1,4 +1,5 @@
-import * as MongoClient from 'mongodb';
+// TODO: Acutally do something with this
+/*import * as MongoClient from 'mongodb';
 import * as assert from 'assert';
 import { dbURL } from './../JSON/private.json';
 import { dbName } from './../JSON/config.json';
@@ -32,4 +33,4 @@ export let remove = (callback: () => void) => {
 
 export let closeConnection = () => {
 	dbClient.close();
-}
+}*/

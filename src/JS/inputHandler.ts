@@ -1,5 +1,6 @@
 import * as Discord from "discord.js";
 import * as config from './../JSON/config.json';
+import { SlashCommandBuilder } from "discord.js";
 
 let commandList: {name:String, effect:(para: string[], message: Discord.Message) => void, commandJSON:{
 	"command": string,"parameters": string,"needsAdmin": boolean,"caseSensitive": boolean,"help": string
@@ -16,7 +17,8 @@ let adminRole: string = config.adminRole;
 export function addCommand(commandName: string, callback: (para: string[], message: Discord.Message) => void, commandJSON:{
 	"command": string,"parameters": string,"needsAdmin": boolean,"caseSensitive": boolean,"help": string
 }) {
-	commandList.push({name:commandName,effect:callback, commandJSON:commandJSON});
+	let commandData = {name:commandName,effect:callback, commandJSON:commandJSON};
+	commandList.push(commandData);
 }
 
 /**
@@ -56,7 +58,7 @@ export async function runCommand(message: Discord.Message) {
 
 	if (commandToRun) {
 		// Check user roles to make sure they have permission to run the command
-		if (commandToRun.commandJSON.needsAdmin && !message.member.roles.find(role => role.name === adminRole)) {
+		if (commandToRun.commandJSON.needsAdmin && !(<Discord.GuildMember>message.member).roles.cache.find(role => role.name === adminRole)) {
 			message.reply("sorry, you must have the '" + adminRole + "' role to use that command");
 			return;
 		}

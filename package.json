@@ -1,12 +1,8 @@
 {
   "lockfileVersion": 1,
   "dependencies": {
-    "@types/mongodb": "^3.5.20",
-    "@types/node": "^14.0.11",
-    "discord.js": "11.6.4",
-    "fs": "0.0.1-security",
-    "mongodb": "^3.5.8",
-    "node-opus": "^0.3.3",
-    "ytdl": "^1.3.2"
+    "@types/node": "18.11.18",
+    "discord.js": "14.7.1",
+    "fs": "0.0.1-security"
   }
 }

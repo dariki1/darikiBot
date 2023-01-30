@@ -1,29 +1,30 @@
-import * as inputHandler from '../inputHandler';
-import * as config from '../../JSON/config.json'; 
-import * as Discord from 'discord.js';
+import { CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
-//commandInformation
-export let info = {
-	"command": "odds",
-	"parameters": "<dice type>...",
-	"needsAdmin": false,
-	"caseSensitive": false,
-	"help": "Gives you the odds of each possible total that could be rolled with the set of <dice type>"
-}
+const maxDice = 12;
 
-export let command = (para: string[], message: Discord.Message) => {
-	//If no command is specified, list all registered commands
-	if (para.length === 0) {
-		message.reply("Please give at least one type of dice (i.e; 6, or 6 6 10)");
-	} else {
+// This is working, but the way Discord handles displaying the non-required options makes it confusing for the user
+
+/*module.exports = {
+	data: (() => {
+		let builder = new SlashCommandBuilder()
+		.setName("odds")
+		.setDescription("Gives you the odds of each possible total that could be rolled with the set of dice")
+		.addIntegerOption(option => option.setRequired(true).setMinValue(2).setDescription(`Number of sides of the dice`).setName('0'));
+		
+		for (let i = 1; i < maxDice; i += 1) {
+			builder = builder.addIntegerOption(option => option.setRequired(false).setMinValue(2).setDescription(`Number of sides of the dice`).setName(i+''))
+		}
+
+		return builder;
+	})(),
+	async execute(interaction: ChatInputCommandInteraction<CacheType>) {
 		let dice: number[] = [];
 		let highestTotal = 0;
-		for (let i = 0; i < para.length; i += 1) {
-			let n = Number(para[i].split('').map(c => isNaN(Number(c)) ? undefined : Number(c)).join(''));
 
-			if (n < 2) {
-				message.reply("Please ensure all dice are at least 2");
-				return;
+		for (let i = 0; i < maxDice; i += 1) {
+			let n = interaction.options.getInteger(''+i);
+			if (n === null) {
+				continue;
 			}
 
 			dice[i] = n;
@@ -70,6 +71,6 @@ export let command = (para: string[], message: Discord.Message) => {
 			rolledTotal += Number(totals[i]) ? Number(totals[i]) : 0;
 		}
 
-		message.reply(`Here are the chances of each roll;\n\t${(totals.map((num, index) => `${index}:\t\t${Math.round(10000*num/rolledTotal)/100}%`).join("\n\t")).trim()}`);
-	}
-}
+		await interaction.reply(`Here are the chances of each roll;\n\t${(totals.map((num, index) => `${index}:\t\t${Math.round(10000*num/rolledTotal)/100}%`).join("\n\t")).trim()}`);
+	},
+};*/

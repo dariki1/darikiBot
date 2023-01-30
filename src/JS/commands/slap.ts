@@ -1,20 +1,11 @@
-import { sendMessage } from "./../utility";
-import * as Discord from "discord.js";
+import { CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
-export let info = {
-	"command": "slap",
-	"parameters": "<user>",
-	"needsAdmin": false,
-	"caseSensitive": false,
-	"help": "Slaps <user>"
-}
-
-export let command = (para: string[], message: Discord.Message) => {
-	// Make sure a target is specified
-	if (para.length === 0) {
-		message.reply("please tell me who you are slapping");
-	} else {
-		let stringTarget = para.toString().replace(/,/g,' ');
-		sendMessage("<@" + message.author.id + "> slapped " + stringTarget + " and did " + Math.floor(Math.random()*49+1) + " damage", <Discord.TextChannel>message.channel);	
-	}
-}
+module.exports = {
+	data: new SlashCommandBuilder()
+		.setName("slap")
+		.setDescription("Slaps a user")
+		.addUserOption((option) => option.setRequired(true).setName("username").setDescription("Name of user to slap")),
+	async execute(interaction: ChatInputCommandInteraction<CacheType>) {
+		await interaction.reply(`${interaction.user.username} slapped ${interaction.options.getUser("username")?.username} and did ${Math.floor(Math.random()*49+1)} damage`);
+	},
+};

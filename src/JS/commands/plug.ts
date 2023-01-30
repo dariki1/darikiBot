@@ -1,37 +1,38 @@
-import * as inputHandler from './../inputHandler';
-import * as config from '../../JSON/config.json'; 
-import * as Discord from 'discord.js';
-import { sendMessage } from '../utility';
+import { CacheType, ChatInputCommandInteraction, Guild, PermissionFlagsBits, PermissionsBitField, SlashCommandBuilder, TextChannel, flatten } from "discord.js";
 
-//commandInformation
-export let info = {
-	"command": "plug",
-	"parameters": "<seconds>",
-	"needsAdmin": true,
-	"caseSensitive": false,
-	"help": "Prevents non-admins from posting in the channel the command is used in for <seconds> seconds"
-}
+module.exports = {
+	data: new SlashCommandBuilder()
+		.setDMPermission(false)
+		.setName("plug")
+		.setDescription("Prevents non-admins from posting in the channel the command is used in")
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+		.addIntegerOption((option) => option.setRequired(true).setName("seconds").setDescription("Number of seconds to prevent posting")),
+	async execute(interaction: ChatInputCommandInteraction<CacheType>) {
+		if (!interaction.inGuild()) {
+			interaction.reply("Must be in a server");
+			return;
+		} else if (interaction.channel === null) {
+			interaction.reply("Invalid channel");
+			return;
+		} else if (!interaction.channel.isTextBased()) {
+			interaction.reply(`Invalid channel`);
+			return;
+		}
 
-export let command = (para: string[], message: Discord.Message) => {
-	//If no command is specified, list all registered commands
-	if (para.length === 0) {
-		message.reply("Please specify a length");
-	} else if (Number.isNaN(Number(para[0]))) {
-		message.reply(`${para[0]} is not a number`);
-	} else {
-		let everyone = message.guild?.roles.everyone;
-		// @ts-ignore
-		let originalPerms = message.channel.permissionsFor(everyone).has('SEND_MESSAGES');
-		// @ts-ignore
-		message.channel.updateOverwrite(everyone, {'SEND_MESSAGES': false,});
+		let guild = <Guild>interaction.guild;
+		let everyone = guild.roles.everyone;
 
-		message.reply("Channel plugged");
+		let channel = <TextChannel>interaction.channel;
 
-		setTimeout(() => {
-			// @ts-ignore
-			message.channel.updateOverwrite(everyone, {'SEND_MESSAGES': originalPerms,});
-			message.channel.send("Channel unplugged");
-		}, Number(para[0]) * 1000);
-	}
+		let originalPerms = channel.permissionsFor(everyone).has(PermissionsBitField.Flags.SendMessages);
 
-}
+		channel.permissionOverwrites.edit(channel.guild.roles.everyone, { SendMessages: false });
+
+		await interaction.reply("Channel plugged");
+
+		setTimeout(async () => {
+			channel.permissionOverwrites.edit(channel.guild.roles.everyone, { SendMessages: originalPerms });
+			await interaction.followUp(`Channel unplugged`);
+		}, Number(interaction.options.getInteger("seconds")) * 1000);
+	},
+};

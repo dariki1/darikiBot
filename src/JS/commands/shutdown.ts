@@ -1,16 +1,12 @@
-//import * as db from '../dbHandler';
-import * as Discord from 'discord.js';
+import { CacheType, ChatInputCommandInteraction, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 
-//commandInformation
-export let info = {
-	"command": "shutdown",
-	"parameters": "",
-	"needsAdmin": true,
-	"caseSensitive": false,
-	"help": "Reboots the bot"
-}
-
-export let command = (para: string[], message: Discord.Message) => {	
-	//db.closeConnection();
-	message.client.destroy();
-}
+module.exports = {
+	data: new SlashCommandBuilder()
+		.setName("shutdown")
+		.setDescription("Reboots the bot")
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+	async execute(interaction: ChatInputCommandInteraction<CacheType>) {
+		await interaction.reply(`Good night`);
+		interaction.client.destroy();
+	},
+};

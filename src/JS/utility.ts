@@ -20,6 +20,10 @@ export function writeJSON(path: string, data: JSON) {
 	fs.writeFileSync(path, JSON.stringify(data));
 }
 
+export function extractPerameters(message: string) {
+
+}
+
 /**
  * Sends a message to a specified channel in a specified guild
  * @param {String} message The message being sent

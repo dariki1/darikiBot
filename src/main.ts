@@ -1,78 +1,101 @@
-console.log('Starting Bot');
+console.log("Starting Bot");
 
 // Load dependencies
-import * as Discord from 'discord.js';
-import * as fs from 'fs';
-import * as priv from './JSON/private.json';
-import * as inputHandler from './JS/inputHandler';
-import { log } from './JS/utility';
-import { GatewayIntentBits } from 'discord.js';
+import * as fs from "fs";
+import * as priv from "./JSON/private.json";
+import { log } from "./JS/utility";
+import { Collection, GatewayIntentBits, Client, Events, Message, SlashCommandBuilder, REST, Routes } from "discord.js";
 
 process.title = "darikiBot";
 
-let DynamicJSDirs = [
-	"commands"
-]
+let DynamicJSDirs = ["commands"];
 
 let key: string;
+let id: string;
 
 switch (process.argv.slice(2)[0]) {
-	case 'dep':
-		console.log('Starting in deployment mode');
+	case "dep":
+		console.log("Starting in deployment mode");
 		key = priv.depKey;
+		id = priv.depID;
 		break;
 	default:
-		console.log('Starting in development mode');
+		console.log("Starting in development mode");
 		key = priv.devKey;
+		id = priv.devID;
 		break;
 }
 
-// Discord module
-const client: Discord.Client = new Discord.Client({intents: [GatewayIntentBits.Guilds]});
+declare module "discord.js" {
+	interface Client {
+		commands: Collection<string, { data: SlashCommandBuilder; execute: (interaction: ChatInputCommandInteraction<CacheType>) => Promise<void> }>;
+	}
+}
 
-/**
- * Shows the help information for the given command
- */
+// Discord module
+const client = new Client({
+	intents: [GatewayIntentBits.Guilds],
+});
+
+client.commands = new Collection();
+
 DynamicJSDirs.forEach((dirName: string) => {
 	fs.readdirSync(`./JS/${dirName}`).forEach((fileName: string) => {
-		if (!fileName.match('.js')) {
-			log("Attempted to add command from a non .js file! Aborting command", 1);
-			return;
+		const filePath = `./JS/${dirName}/${fileName}`;
+		const command = require(filePath);
+
+		if ("data" in command && "execute" in command) {
+			client.commands.set(command.data.name, command);
+			log(`Set command from ${filePath}`);
+		} else {
+			log(`Failed to load command from ${filePath}`);
 		}
-		const command = require("./JS/commands/" + fileName);
-		if (!command.info) {
-			log("Attempt to add command with no info! Aborting command", 1);
-			return;
-		}
-		if (!command.command) {
-			log("Attempt to add command with no command function! Aborting command", 1);
-			return;
-		}
-		if (!command.info.command) {
-			log("Attempting to add command with no command name! Aborting command", 1);
-			return;
-		}
-		inputHandler.addCommand(command.info.command, command.command, command.info);
-		log("Loaded command; " + command.info.command);
 	});
 });
 
-// Add a message listener that will attempt to run the message as a command if it is not from a bot, and is from the regestered channel
-client.on('message', (message: Discord.Message) => {
-	if (message.author.bot) {
+// Construct and prepare an instance of the REST module
+const rest = new REST({ version: "10" }).setToken(key);
+
+(async () => {
+	const commands = client.commands.map((command) => {
+		return command.data.toJSON();
+	});
+
+	const data = await rest.put(Routes.applicationCommands(id), {
+		body: commands,
+	});
+})();
+
+client.on(Events.InteractionCreate, async (interaction) => {
+	if (!interaction.isChatInputCommand()) {
 		return;
 	}
 
-	inputHandler.runCommand(message);
+	const command = interaction.client.commands.get(interaction.commandName);
+
+	if (!command) {
+		console.error(`No command matching ${interaction.commandName}`);
+		return;
+	}
+
+	try {
+		await command.execute(interaction);
+	} catch (err) {
+		console.error(err);
+		await interaction.reply({ content: `There was an error when executing this command`, ephemeral: true });
+	}
 });
 
-client.once(Discord.Events.ClientReady, c => {
+/*// Add a message listener that will attempt to run the message as a command if it is not from a bot, and is from the regestered channel
+client.on("message", (message: Message) => {
+	if (message.author.bot) {
+		return;
+	}
+});*/
+
+client.once(Events.ClientReady, (c) => {
 	log("Logged in");
-})
+});
 
 // Login
-client.login(key).then(async () => {
-	// Inform user the bot is running
-	
-	log("Bot startup complete");
-});
+client.login(key)

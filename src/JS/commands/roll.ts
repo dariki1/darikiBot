@@ -1,34 +1,23 @@
-import * as Discord from "discord.js";
+import { CacheType, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
-export let info = {
-	"command": "roll",
-	"parameters": "<dice sides, default 20> <amount per batch, default 1> <number of batches, default 1>",
-	"needsAdmin": false,
-	"caseSensitive": false,
-	"help": "Rolls <number of batches> <dices sides> sided dice <amount per batch> times and posts the results"
-}
+module.exports = {
+	data: new SlashCommandBuilder()
+		.setName("roll")
+		.setDescription("Rolls a number of dice")
+		.addIntegerOption(option => option.setName(`sides`).setDescription(`Number of sides on the dice`).setMinValue(2))
+		.addIntegerOption(option => option.setName(`diceperbatch`).setDescription(`Number of dice in each roll`).setMinValue(1))
+		.addIntegerOption(option => option.setName(`numberofbatches`).setDescription(`Number of times to roll`).setMinValue(1)),		
+	async execute(interaction: ChatInputCommandInteraction<CacheType>) {
+		let ret: [number, number, number] = [
+			interaction.options.getInteger(`sides`) ?? 20,
+			interaction.options.getInteger(`diceperbatch`) ?? 1,
+			interaction.options.getInteger(`numberofbatches`) ?? 1
+		];
 
-export let command = (para: string[], message: Discord.Message) => {
-	if (Math.random()<0.01) {
-		message.reply("never gonna give you up");
-		return;
-	}
+		interaction.reply(`you rolled;\n\t${formatRolls(...ret)}`);
+	},
+};
 
-	let ret: [number, number, number] = [20, 1, 1];
-	for (let pCount = 0; pCount < 3; pCount += 1) {
-		if (para.length < pCount + 1) {
-			break;
-		} else {
-			if (isNaN(Number(para[pCount]))) {
-				message.reply("please use a number for parameter #" + (pCount + 1));
-				return;
-			} else {
-				ret[pCount] = Number(para[pCount]);
-			}
-		}
-	}
-	message.reply(`you rolled;\n\t${formatRolls(...ret)}`);
-}
 
 function formatRolls(sides: number, batchSize: number, batchCount: number) {
 	let ret = "";

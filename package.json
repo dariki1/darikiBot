@@ -3,6 +3,10 @@
   "dependencies": {
     "@types/node": "18.11.18",
     "discord.js": "14.7.1",
-    "fs": "0.0.1-security"
+    "fs": "0.0.1-security",
+    "lokijs": "^1.5.12"
+  },
+  "devDependencies": {
+    "@types/lokijs": "^1.5.7"
   }
 }

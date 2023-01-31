@@ -4,7 +4,7 @@ console.log("Starting Bot");
 import * as fs from "fs";
 import * as priv from "./JSON/private.json";
 import { log } from "./JS/utility";
-import { Collection, GatewayIntentBits, Client, Events, Message, SlashCommandBuilder, REST, Routes } from "discord.js";
+import { Collection, GatewayIntentBits, Client, Events, SlashCommandBuilder, REST, Routes } from "discord.js";
 
 process.title = "darikiBot";
 
@@ -85,13 +85,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		await interaction.reply({ content: `There was an error when executing this command`, ephemeral: true });
 	}
 });
-
-/*// Add a message listener that will attempt to run the message as a command if it is not from a bot, and is from the regestered channel
-client.on("message", (message: Message) => {
-	if (message.author.bot) {
-		return;
-	}
-});*/
 
 client.once(Events.ClientReady, (c) => {
 	log("Logged in");

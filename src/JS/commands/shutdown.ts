@@ -1,4 +1,5 @@
 import { CacheType, ChatInputCommandInteraction, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import * as db from "./../dbHandler";
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -8,5 +9,6 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction<CacheType>) {
 		await interaction.reply(`Good night`);
 		interaction.client.destroy();
+		db.shutdown();
 	},
 };

@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CacheType, ChatInputCommandInteraction, EmbedBuilder, InteractionButtonComponentData, ModalActionRowComponent, ModalActionRowComponentBuilder, ModalBuilder, ModalSubmitInteraction, SlashCommandBuilder, TextInputBuilder, TextInputStyle, User } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CacheType, ChatInputCommandInteraction, EmbedBuilder, InteractionButtonComponentData, ModalActionRowComponent, ModalActionRowComponentBuilder, ModalBuilder, ModalSubmitInteraction, PermissionFlagsBits, SlashCommandBuilder, TextInputBuilder, TextInputStyle, User } from "discord.js";
 import { CommandExport, SlashCommandExport, ButtonCommandExport, ModalCommandExport } from "../command";
 import loki from "lokijs";
 
@@ -125,6 +125,14 @@ const buttonCommands: ButtonCommandExport[] = [
 		},
 	},
 	{
+		interaction: new ButtonBuilder().setCustomId("backtogamelist").setLabel("Back").setStyle(ButtonStyle.Primary),
+		execute: async (interaction: ButtonInteraction) => {
+			interaction.message.delete();
+
+			listGames(interaction);
+		}
+	},
+	{
 		interaction: /^inspectGame\d+$/,
 		execute: async (interaction: ButtonInteraction) => {
 			const label = interaction.component.label;
@@ -149,11 +157,11 @@ const buttonCommands: ButtonCommandExport[] = [
 
 function displayGame(game: Game, interaction: ButtonInteraction) {
 	// @ts-ignore
-	interaction.reply({ content: `> Game: ${game?.name}\n> Players: ${game?.players}\n> Info: ${game?.info}\n> People interested: \n\t${game?.interested.join("\n\t")}`, components: [new ActionRowBuilder<ButtonBuilder>().addComponents([buttonCommands[0].interaction, buttonCommands[1].interaction])], options: { ephemeral: true } });
+	interaction.reply({ content: `> Game: ${game?.name}\n> Players: ${game?.players}\n> Info: ${game?.info ?? ""}\n> People interested: \n${game?.interested.map(user => `>\t<@${user.id}>\n`).join('')}`, components: [new ActionRowBuilder<ButtonBuilder>().addComponents([buttonCommands[0].interaction, buttonCommands[2].interaction, buttonCommands[1].interaction])], options: { ephemeral: true } });
 	return;
 }
 
-function listGames(interaction: ChatInputCommandInteraction | ButtonInteraction) {
+async function listGames(interaction: ChatInputCommandInteraction | ButtonInteraction) {
 	let buttons: ActionRowBuilder<ButtonBuilder>[] = [];
 	let count = 0;
 
@@ -180,7 +188,7 @@ function listGames(interaction: ChatInputCommandInteraction | ButtonInteraction)
 		buttons.push(new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId(`inspectGame${count++}`).setLabel(game.name).setStyle(ButtonStyle.Primary)));
 	}
 
-	interaction.reply({ content: "Click on a game to inspect it:", components: buttons, options: { ephemeral: true } });
+	await interaction.reply({ content: "Click on a game to inspect it:", components: buttons, options: { ephemeral: true } });
 }
 
 module.exports = <CommandExport>{

@@ -4,7 +4,8 @@ console.log("Starting Bot");
 import * as fs from "fs";
 import * as priv from "./JSON/private.json";
 import { log } from "./JS/utility";
-import { Collection, GatewayIntentBits, Client, Events, SlashCommandBuilder, REST, Routes } from "discord.js";
+import { Collection, GatewayIntentBits, Client, Events, SlashCommandBuilder, REST, Routes, ButtonBuilder, ComponentType, ButtonStyle, APIMessageComponentEmoji } from "discord.js";
+import { ButtonCommandExport, CommandExport, ModalCommandExport, SlashCommandExport } from "./JS/command";
 
 process.title = "darikiBot";
 
@@ -28,7 +29,22 @@ switch (process.argv.slice(2)[0]) {
 
 declare module "discord.js" {
 	interface Client {
-		commands: Collection<string, { data: SlashCommandBuilder; execute: (interaction: ChatInputCommandInteraction<CacheType>) => Promise<void> }>;
+		commands: {
+			slashCommands: Collection<string, SlashCommandExport>;
+			buttonCommands: Collection<string | RegExp, ButtonCommandExport>;
+			buttonRegexps: {expression: RegExp, execute: (interaction: ButtonInteraction) => Promise<void>}[];
+			modalCommands: Collection<string, ModalCommandExport>;
+		}
+	}
+	interface ButtonBuilder {
+		data: {
+			custom_id: string;
+			type: ComponentType.Button | undefined;
+			style: ButtonStyle | undefined;
+			label: string | undefined;
+			emoji: APIMessageComponentEmoji | undefined;
+			disabled: boolean | undefined;
+		}
 	}
 }
 
@@ -37,28 +53,52 @@ const client = new Client({
 	intents: [GatewayIntentBits.Guilds],
 });
 
-client.commands = new Collection();
-
-DynamicJSDirs.forEach((dirName: string) => {
-	fs.readdirSync(`./JS/${dirName}`).forEach((fileName: string) => {
-		const filePath = `./JS/${dirName}/${fileName}`;
-		const command = require(filePath);
-
-		if ("data" in command && "execute" in command) {
-			client.commands.set(command.data.name, command);
-			log(`Set command from ${filePath}`);
-		} else {
-			log(`Failed to load command from ${filePath}`);
-		}
-	});
-});
+client.commands = {
+	slashCommands: new Collection(),
+	buttonCommands: new Collection(),
+	buttonRegexps: [],
+	modalCommands: new Collection(),
+};
 
 // Construct and prepare an instance of the REST module
 const rest = new REST({ version: "10" }).setToken(key);
 
+DynamicJSDirs.forEach((dirName: string) => {
+	fs.readdirSync(`./JS/${dirName}`).forEach((fileName: string) => {
+		const filePath = `./JS/${dirName}/${fileName}`;
+		const command = <CommandExport>require(filePath);
+
+		if ("slashCommands" in command) {
+			command.slashCommands.forEach(slashCommand => {
+				client.commands.slashCommands.set(slashCommand.interaction.name, slashCommand);
+			});
+		}
+		if ("buttonCommands" in command) {
+			command.buttonCommands.forEach(buttonCommand => {
+				if (buttonCommand.interaction instanceof RegExp) {
+					client.commands.buttonRegexps.push({
+						expression: buttonCommand.interaction, execute: buttonCommand.execute
+					});
+				} else {
+					client.commands.buttonCommands.set(buttonCommand.interaction.data.custom_id, buttonCommand);
+				}
+			});
+		}
+		if ("modalCommands" in command) {
+			command.modalCommands.forEach(modalCommand => {
+				if (modalCommand.interaction.data.custom_id) {
+					client.commands.modalCommands.set(modalCommand.interaction.data.custom_id, modalCommand);
+				} else {
+					console.warn("Modal command without custom id");
+				}
+			});
+		}
+	});
+});
+
 (async () => {
-	const commands = client.commands.map((command) => {
-		return command.data.toJSON();
+	let commands = client.commands.slashCommands.map((command) => {
+		return command.interaction.toJSON();
 	});
 
 	const data = await rest.put(Routes.applicationCommands(id), {
@@ -67,22 +107,54 @@ const rest = new REST({ version: "10" }).setToken(key);
 })();
 
 client.on(Events.InteractionCreate, async (interaction) => {
-	if (!interaction.isChatInputCommand()) {
-		return;
-	}
+	if (interaction.isButton()) {
+		const command = interaction.client.commands.buttonCommands.get(interaction.customId);
+		
+		if (!command) {
+			let exps = interaction.client.commands.buttonRegexps.filter(exp => exp.expression.test(interaction.customId))
+			for (let e of exps) {
+				await e.execute(interaction);
+			}
+			if (exps.length == 0) {
+				console.error(`No button command matching ${interaction.customId}`);
+			}
+			return;
+		}
 
-	const command = interaction.client.commands.get(interaction.commandName);
+		try {
+			await command.execute(interaction);
+		} catch (err) {
+			console.error(err);
+			await interaction.reply({ content: `There was an error when executing this command`, ephemeral: true });
+		}
+	} else if (interaction.isChatInputCommand()) {
+		const command = interaction.client.commands.slashCommands.get(interaction.commandName);
 
-	if (!command) {
-		console.error(`No command matching ${interaction.commandName}`);
-		return;
-	}
+		if (!command) {
+			console.error(`No slash command matching ${interaction.commandName}`);
+			return;
+		}
+	
+		try {
+			await command.execute(interaction);
+		} catch (err) {
+			console.error(err);
+			await interaction.reply({ content: `There was an error when executing this command`, ephemeral: true });
+		}
+	} else if (interaction.isModalSubmit()) {
+		const command = interaction.client.commands.modalCommands.get(interaction.customId);
 
-	try {
-		await command.execute(interaction);
-	} catch (err) {
-		console.error(err);
-		await interaction.reply({ content: `There was an error when executing this command`, ephemeral: true });
+		if (!command) {
+			console.error(`No slash command matching ${interaction.customId}`);
+			return;
+		}
+	
+		try {
+			await command.execute(interaction);
+		} catch (err) {
+			console.error(err);
+			await interaction.reply({ content: `There was an error when executing this command`, ephemeral: true });
+		}
 	}
 });
 

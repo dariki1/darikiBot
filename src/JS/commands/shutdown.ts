@@ -6,7 +6,7 @@ module.exports = <CommandExport>{
 		{
 			interaction: new SlashCommandBuilder().setName("shutdown").setDescription("Reboots the bot").setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 			execute: async (interaction: ChatInputCommandInteraction<CacheType>) => {
-				await interaction.reply(`Good night`);
+				await interaction.reply({ content: `Good night`, ephemeral: true });
 				interaction.client.destroy();
 			},
 		},

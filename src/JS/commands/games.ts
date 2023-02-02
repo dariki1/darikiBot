@@ -38,7 +38,7 @@ const slashCommands: SlashCommandExport[] = [
 					interaction.showModal(modalCommands[0].interaction);
 					return;
 				default:
-					await interaction.reply({ options: {ephemeral: true }, content: "An error occurred"});
+					await interaction.reply({ ephemeral: true, content: "An error occurred" });
 			}
 		},
 	},
@@ -65,7 +65,7 @@ const modalCommands: ModalCommandExport[] = [
 			const gameInfo = interaction.fields.getTextInputValue("gameInfo");
 
 			if (gameCollection.by("name", gameName)) {
-				interaction.reply({ content: `That game is already on the list`, options: { ephemeral: true } });
+				interaction.reply({ content: `That game is already on the list`, ephemeral: true });
 				return;
 			}
 
@@ -78,7 +78,7 @@ const modalCommands: ModalCommandExport[] = [
 
 			db.saveDatabase();
 
-			interaction.reply({ content: `Game added`, options: { ephemeral: true } });
+			interaction.reply({ content: `Game added`, ephemeral: true });
 		},
 	},
 ];
@@ -103,8 +103,6 @@ const buttonCommands: ButtonCommandExport[] = [
 				return;
 			}
 
-			interaction.message.delete();
-
 			db.saveDatabase();
 
 			displayGame(game, interaction);
@@ -119,24 +117,20 @@ const buttonCommands: ButtonCommandExport[] = [
 
 			db.saveDatabase();
 
-			interaction.message.delete();
-
-			interaction.reply({ content: "Deleted", options: { ephemeral: true } });
+			interaction.update({ content: "Deleted", components: [] });
 		},
 	},
 	{
 		interaction: new ButtonBuilder().setCustomId("backtogamelist").setLabel("Back").setStyle(ButtonStyle.Primary),
 		execute: async (interaction: ButtonInteraction) => {
-			interaction.message.delete();
-
 			listGames(interaction);
-		}
+		},
 	},
 	{
 		interaction: /^inspectGame\d+$/,
 		execute: async (interaction: ButtonInteraction) => {
 			const label = interaction.component.label;
-			
+
 			if (!label) {
 				return;
 			}
@@ -144,11 +138,9 @@ const buttonCommands: ButtonCommandExport[] = [
 			let game = gameCollection.by("name", label);
 
 			if (!game) {
-				interaction.reply({ content: "An error ocurred", options: { ephemeral: true } });
+				interaction.reply({ content: "An error ocurred", ephemeral: true });
 				return;
 			}
-
-			interaction.message.delete();
 
 			displayGame(game, interaction);
 		},
@@ -157,7 +149,7 @@ const buttonCommands: ButtonCommandExport[] = [
 
 function displayGame(game: Game, interaction: ButtonInteraction) {
 	// @ts-ignore
-	interaction.reply({ content: `> Game: ${game?.name}\n> Players: ${game?.players}\n> Info: ${game?.info ?? ""}\n> People interested: \n${game?.interested.map(user => `>\t<@${user.id}>\n`).join('')}`, components: [new ActionRowBuilder<ButtonBuilder>().addComponents([buttonCommands[0].interaction, buttonCommands[2].interaction, buttonCommands[1].interaction])], options: { ephemeral: true } });
+	interaction.update({ content: `> Game: ${game?.name}\n> Players: ${game?.players}\n> Info: ${game?.info ?? ""}\n> People interested: \n${game?.interested.map((user) => `>\t<@${user.id}>\n`).join("")}`, components: [new ActionRowBuilder<ButtonBuilder>().addComponents([buttonCommands[0].interaction, buttonCommands[2].interaction, buttonCommands[1].interaction])], ephemeral: true });
 	return;
 }
 
@@ -188,7 +180,12 @@ async function listGames(interaction: ChatInputCommandInteraction | ButtonIntera
 		buttons.push(new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId(`inspectGame${count++}`).setLabel(game.name).setStyle(ButtonStyle.Primary)));
 	}
 
-	await interaction.reply({ content: "Click on a game to inspect it:", components: buttons, options: { ephemeral: true } });
+	if (interaction instanceof ChatInputCommandInteraction) {
+		await interaction.reply({ content: "Click on a game to inspect it:", components: buttons, ephemeral: true });
+	} else {
+		await interaction.update({ content: "Click on a game to inspect it:", components: buttons });
+	}
+	
 }
 
 module.exports = <CommandExport>{
